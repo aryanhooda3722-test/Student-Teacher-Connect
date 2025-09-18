@@ -283,6 +283,10 @@ async def complete_assignment(assignment_id: str, current_user: User = Depends(g
     if not assignment:
         raise HTTPException(status_code=404, detail="Assignment not found")
     
+    # Check if student is assigned to this assignment
+    if current_user.id not in assignment.get("assigned_students", []):
+        raise HTTPException(status_code=403, detail="You are not assigned to this assignment")
+    
     # Check if already completed
     existing_submission = await db.submissions.find_one({
         "assignment_id": assignment_id,
