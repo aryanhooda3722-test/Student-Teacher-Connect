@@ -1,34 +1,195 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Custom styles for the Student-Teacher Connect app */
+
+.App {
+  text-align: center;
 }
 
 .App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
 }
 
 .App-link {
-    color: #61dafb;
+  color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Enhanced form styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
+}
+
+.form-input:focus {
+  @apply ring-2 ring-blue-500 border-transparent;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 transition-colors;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-lg shadow-lg;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-gray-200;
+}
+
+.card-body {
+  @apply p-6;
+}
+
+/* Assignment status badges */
+.badge-completed {
+  @apply inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full;
+}
+
+.badge-overdue {
+  @apply inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full;
+}
+
+.badge-pending {
+  @apply inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full;
+}
+
+.badge-teacher {
+  @apply inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full;
+}
+
+.badge-student {
+  @apply inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full;
+}
+
+/* Navigation styles */
+.nav-item {
+  @apply px-3 py-2 rounded-md text-sm font-medium transition-colors;
+}
+
+.nav-item.active {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.nav-item:not(.active) {
+  @apply text-gray-500 hover:text-gray-700 hover:bg-gray-100;
+}
+
+/* Profile avatar */
+.avatar {
+  @apply w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center text-2xl font-bold text-blue-700;
+}
+
+.avatar-sm {
+  @apply w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center text-sm font-bold text-blue-700;
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-light {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .mobile-hide {
+    display: none;
+  }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus states for accessibility */
+.focus-visible:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Error states */
+.error-input {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+.error-text {
+  @apply text-red-600 text-sm mt-1;
+}
+
+/* Success states */
+.success-input {
+  @apply border-green-300 focus:ring-green-500 focus:border-green-500;
+}
+
+.success-text {
+  @apply text-green-600 text-sm mt-1;
+}
+
+/* Dark mode styles (for future implementation) */
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .text-gray-900 {
+  @apply text-gray-100;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .border-gray-200 {
+  @apply border-gray-700;
+}
+
+/* Transitions */
+.transition-all {
+  @apply transition-all duration-200 ease-in-out;
 }
