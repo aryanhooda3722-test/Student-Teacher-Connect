@@ -100,6 +100,7 @@ class Assignment(BaseModel):
     deadline: datetime
     teacher_id: str
     teacher_name: str
+    assigned_students: List[str] = []  # List of student IDs assigned to this assignment
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class AssignmentCreate(BaseModel):
@@ -107,6 +108,7 @@ class AssignmentCreate(BaseModel):
     description: str
     subject: str
     deadline: datetime
+    assigned_students: List[str] = []  # Optional list of student IDs to assign
 
 class AssignmentSubmission(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
