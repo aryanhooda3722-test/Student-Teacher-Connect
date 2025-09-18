@@ -576,17 +576,37 @@ const TeacherDashboard = () => {
           {myAssignments.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No assignments created yet.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myAssignments.map((assignment) => (
-                <div key={assignment.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-gray-900">{assignment.title}</h4>
-                      <p className="text-sm text-blue-600 mb-2">{assignment.subject}</p>
-                      <p className="text-gray-700 mb-3">{assignment.description}</p>
-                      <p className="text-sm text-gray-500">
-                        Due: {new Date(assignment.deadline).toLocaleDateString()}
-                      </p>
+                <div key={assignment.id} className="bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                        📚 {assignment.subject}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Created {new Date(assignment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3 leading-tight">{assignment.title}</h4>
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">{assignment.description}</p>
+                  </div>
+                  <div className="border-t border-blue-100 pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-700">Due Date:</span>
+                        <span className="text-sm font-bold text-red-600">
+                          {new Date(assignment.deadline).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className="text-xs text-gray-500">👨‍🏫</span>
+                        <span className="text-xs text-gray-500">You</span>
+                      </div>
                     </div>
                   </div>
                 </div>
