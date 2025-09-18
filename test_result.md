@@ -222,12 +222,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Authentication System"
-    - "Assignment Management System"
-    - "Assignment Completion System"
-    - "Database Models and MongoDB Integration"
+    - "Authentication UI (Login/Register)"
+    - "Role-based Dashboard System"
+    - "Assignment Management UI"
+    - "User Profile Management"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
