@@ -190,6 +190,6 @@
 }
 
 /* Transitions */
-.transition-all {
-  @apply transition-all duration-200 ease-in-out;
+.transition-custom {
+  @apply transition-colors duration-200 ease-in-out;
 }
