@@ -835,53 +835,208 @@ const StudentDashboard = () => {
   );
 };
 
-// Main Dashboard Component
-const Dashboard = () => {
-  const { user } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard');
+// All Assignments Component
+const AllAssignments = () => {
+  const { user, token } = useAuth();
+  const [assignments, setAssignments] = useState([]);
+  const [completedAssignments, setCompletedAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const navigation = [
-    { id: 'dashboard', name: 'Dashboard', icon: '📚' },
-    { id: 'profile', name: 'Profile', icon: '👤' }
-  ];
+  useEffect(() => {
+    fetchAllAssignments();
+    if (user.role === 'student') {
+      fetchCompletedAssignments();
+    }
+  }, []);
+
+  const fetchAllAssignments = async () => {
+    try {
+      const response = await axios.get(`${API}/assignments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAssignments(response.data);
+    } catch (error) {
+      console.error('Failed to fetch assignments:', error);
+    }
+  };
+
+  const fetchCompletedAssignments = async () => {
+    try {
+      const response = await axios.get(`${API}/submissions/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompletedAssignments(response.data.completed_assignments);
+    } catch (error) {
+      console.error('Failed to fetch completed assignments:', error);
+    }
+  };
+
+  const handleCompleteAssignment = async (assignmentId) => {
+    setLoading(true);
+    try {
+      await axios.post(`${API}/assignments/${assignmentId}/complete`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCompletedAssignments();
+    } catch (error) {
+      console.error('Failed to complete assignment:', error);
+      alert('Failed to complete assignment. You might not be assigned to this assignment.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Student-Teacher Connect</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              {navigation.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentView(item.id)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === item.id
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="mr-2">{item.icon}</span>
-                  {item.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-gray-900">All Assignments</h2>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {currentView === 'profile' ? (
-            <Profile />
+      <div className="bg-white rounded-lg shadow-lg">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">
+            All Assignments from Teachers
+            {user.role === 'student' && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (You can only complete assignments assigned to you)
+              </span>
+            )}
+          </h3>
+        </div>
+        <div className="p-6">
+          {assignments.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No assignments available.</p>
           ) : (
-            user?.role === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {assignments.map((assignment) => {
+                const isCompleted = completedAssignments.includes(assignment.id);
+                const isOverdue = new Date(assignment.deadline) < new Date();
+                const isAssignedToMe = user.role === 'student' && assignment.assigned_students?.includes(user.id);
+                const canComplete = user.role === 'student' && isAssignedToMe && !isCompleted;
+                
+                return (
+                  <div 
+                    key={assignment.id} 
+                    className={`relative bg-gradient-to-br rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-200 border-2 ${
+                      isCompleted 
+                        ? 'from-green-50 to-green-100 border-green-200' 
+                        : isOverdue 
+                        ? 'from-red-50 to-red-100 border-red-200' 
+                        : user.role === 'student' && !isAssignedToMe
+                        ? 'from-gray-50 to-gray-100 border-gray-200 opacity-75'
+                        : 'from-white to-indigo-50 border-indigo-100'
+                    }`}
+                  >
+                    {/* Completion Checkbox for Students */}
+                    {user.role === 'student' && (
+                      <div className="absolute top-4 right-4">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isCompleted}
+                            onChange={() => canComplete && handleCompleteAssignment(assignment.id)}
+                            disabled={loading || isCompleted || !isAssignedToMe}
+                            className="h-5 w-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-50"
+                          />
+                          <span className="ml-2 text-sm font-medium text-gray-700">
+                            {isCompleted ? 'Complete' : !isAssignedToMe ? 'Not Assigned' : 'Mark Done'}
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
+                    {/* Status Badges */}
+                    <div className="mb-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                          assignment.subject === 'Mathematics' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+                          assignment.subject === 'Science' ? 'bg-green-100 text-green-800 border border-green-200' :
+                          assignment.subject === 'English' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                          assignment.subject === 'History' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                          assignment.subject === 'Art' ? 'bg-pink-100 text-pink-800 border border-pink-200' :
+                          'bg-gray-100 text-gray-800 border border-gray-200'
+                        }`}>
+                          {assignment.subject === 'Mathematics' && '🔢'} 
+                          {assignment.subject === 'Science' && '🔬'} 
+                          {assignment.subject === 'English' && '📖'} 
+                          {assignment.subject === 'History' && '🏛️'} 
+                          {assignment.subject === 'Art' && '🎨'} 
+                          {!['Mathematics', 'Science', 'English', 'History', 'Art'].includes(assignment.subject) && '📚'} 
+                          {assignment.subject}
+                        </span>
+                        
+                        {user.role === 'student' && isAssignedToMe && (
+                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full border border-blue-200">
+                            📝 Assigned to You
+                          </span>
+                        )}
+                        
+                        {isCompleted && (
+                          <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full border border-green-200">
+                            ✅ Completed
+                          </span>
+                        )}
+                        {isOverdue && !isCompleted && (
+                          <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full border border-red-200">
+                            ⏰ Overdue
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Assignment Title */}
+                      <h4 className={`text-xl font-bold mb-3 leading-tight ${
+                        user.role === 'student' ? 'pr-20' : ''
+                      } ${user.role === 'student' && !isAssignedToMe ? 'text-gray-600' : 'text-gray-900'}`}>
+                        {assignment.title}
+                      </h4>
+                      
+                      {/* Description */}
+                      <p className={`text-sm mb-4 leading-relaxed ${
+                        user.role === 'student' && !isAssignedToMe ? 'text-gray-500' : 'text-gray-600'
+                      }`}>
+                        {assignment.description}
+                      </p>
+                    </div>
+
+                    {/* Footer Information */}
+                    <div className="border-t border-gray-200 pt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-700">Due Date:</span>
+                          <span className={`text-sm font-bold ${isOverdue && !isCompleted ? 'text-red-600' : 'text-indigo-600'}`}>
+                            {new Date(assignment.deadline).toLocaleDateString('en-US', { 
+                              weekday: 'short',
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-xs text-gray-500">👨‍🏫</span>
+                            <span className="text-xs text-gray-600 font-medium">{assignment.teacher_name}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Additional Information */}
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Created: {new Date(assignment.created_at).toLocaleDateString()}</span>
+                        <span>
+                          {assignment.assigned_students?.length || 0} student(s) assigned
+                        </span>
+                      </div>
+                      
+                      {isCompleted && user.role === 'student' && (
+                        <div className="text-xs text-green-600 font-medium text-center">✓ Task completed by you</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 };
