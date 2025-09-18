@@ -223,7 +223,8 @@ async def create_assignment(assignment_data: AssignmentCreate, current_user: Use
         subject=assignment_data.subject,
         deadline=assignment_data.deadline,
         teacher_id=current_user.id,
-        teacher_name=current_user.name
+        teacher_name=current_user.name,
+        assigned_students=assignment_data.assigned_students
     )
     
     assignment_dict = prepare_for_mongo(assignment.dict())
@@ -232,7 +233,8 @@ async def create_assignment(assignment_data: AssignmentCreate, current_user: Use
     return assignment
 
 @api_router.get("/assignments", response_model=List[Assignment])
-async def get_assignments(current_user: User = Depends(get_current_user)):
+async def get_all_assignments(current_user: User = Depends(get_current_user)):
+    """Get all assignments for both teachers and students"""
     assignments_data = await db.assignments.find().to_list(1000)
     assignments = []
     for assignment_data in assignments_data:
@@ -242,15 +244,33 @@ async def get_assignments(current_user: User = Depends(get_current_user)):
 
 @api_router.get("/assignments/my", response_model=List[Assignment])
 async def get_my_assignments(current_user: User = Depends(get_current_user)):
-    if current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Only teachers can view their assignments")
+    """Get user's specific assignments - teacher's created assignments or student's assigned assignments"""
+    if current_user.role == "teacher":
+        # Teachers see assignments they created
+        assignments_data = await db.assignments.find({"teacher_id": current_user.id}).to_list(1000)
+    else:
+        # Students see assignments they are specifically assigned to
+        assignments_data = await db.assignments.find({"assigned_students": current_user.id}).to_list(1000)
     
-    assignments_data = await db.assignments.find({"teacher_id": current_user.id}).to_list(1000)
     assignments = []
     for assignment_data in assignments_data:
         assignment_data = parse_from_mongo(assignment_data)
         assignments.append(Assignment(**assignment_data))
     return assignments
+
+# Get all students (for assignment creation)
+@api_router.get("/users/students", response_model=List[User])
+async def get_all_students(current_user: User = Depends(get_current_user)):
+    """Get all students for assignment creation"""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Only teachers can view student list")
+    
+    students_data = await db.users.find({"role": "student"}).to_list(1000)
+    students = []
+    for student_data in students_data:
+        student_data = parse_from_mongo(student_data)
+        students.append(User(**{k: v for k, v in student_data.items() if k != "password"}))
+    return students
 
 # Assignment Submission Routes
 @api_router.post("/assignments/{assignment_id}/complete")
