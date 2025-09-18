@@ -453,19 +453,21 @@ const Profile = () => {
 // Teacher Dashboard Component
 const TeacherDashboard = () => {
   const { user, token } = useAuth();
-  const [assignments, setAssignments] = useState([]);
   const [myAssignments, setMyAssignments] = useState([]);
+  const [students, setStudents] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     subject: '',
-    deadline: ''
+    deadline: '',
+    assigned_students: []
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchMyAssignments();
+    fetchStudents();
   }, []);
 
   const fetchMyAssignments = async () => {
@@ -476,6 +478,17 @@ const TeacherDashboard = () => {
       setMyAssignments(response.data);
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const response = await axios.get(`${API}/users/students`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
     }
   };
 
@@ -491,7 +504,7 @@ const TeacherDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setFormData({ title: '', description: '', subject: '', deadline: '' });
+      setFormData({ title: '', description: '', subject: '', deadline: '', assigned_students: [] });
       setShowCreateForm(false);
       fetchMyAssignments();
     } catch (error) {
@@ -501,10 +514,19 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleStudentSelection = (studentId) => {
+    setFormData(prev => ({
+      ...prev,
+      assigned_students: prev.assigned_students.includes(studentId)
+        ? prev.assigned_students.filter(id => id !== studentId)
+        : [...prev.assigned_students, studentId]
+    }));
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h2>
+        <h2 className="text-2xl font-bold text-gray-900">My Assignments</h2>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -557,6 +579,29 @@ const TeacherDashboard = () => {
                 onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Assign to Students</label>
+              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-3 space-y-2">
+                {students.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No students available</p>
+                ) : (
+                  students.map((student) => (
+                    <label key={student.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.assigned_students.includes(student.id)}
+                        onChange={() => handleStudentSelection(student.id)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{student.name} ({student.email})</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Selected: {formData.assigned_students.length} student(s)
+              </p>
+            </div>
             <button
               type="submit"
               disabled={loading}
@@ -570,7 +615,7 @@ const TeacherDashboard = () => {
 
       <div className="bg-white rounded-lg shadow-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">My Assignments</h3>
+          <h3 className="text-lg font-semibold text-gray-900">My Created Assignments</h3>
         </div>
         <div className="p-6">
           {myAssignments.length === 0 ? (
@@ -592,7 +637,7 @@ const TeacherDashboard = () => {
                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">{assignment.description}</p>
                   </div>
                   <div className="border-t border-blue-100 pt-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium text-gray-700">Due Date:</span>
                         <span className="text-sm font-bold text-red-600">
@@ -603,10 +648,9 @@ const TeacherDashboard = () => {
                           })}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs text-gray-500">👨‍🏫</span>
-                        <span className="text-xs text-gray-500">You</span>
-                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Assigned to {assignment.assigned_students?.length || 0} student(s)
                     </div>
                   </div>
                 </div>
