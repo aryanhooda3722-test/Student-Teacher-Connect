@@ -666,21 +666,21 @@ const TeacherDashboard = () => {
 // Student Dashboard Component
 const StudentDashboard = () => {
   const { user, token } = useAuth();
-  const [assignments, setAssignments] = useState([]);
+  const [myAssignments, setMyAssignments] = useState([]);
   const [completedAssignments, setCompletedAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchAssignments();
+    fetchMyAssignments();
     fetchCompletedAssignments();
   }, []);
 
-  const fetchAssignments = async () => {
+  const fetchMyAssignments = async () => {
     try {
-      const response = await axios.get(`${API}/assignments`, {
+      const response = await axios.get(`${API}/assignments/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAssignments(response.data);
+      setMyAssignments(response.data);
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
     }
@@ -706,6 +706,7 @@ const StudentDashboard = () => {
       fetchCompletedAssignments();
     } catch (error) {
       console.error('Failed to complete assignment:', error);
+      alert('Failed to complete assignment. You might not be assigned to this assignment.');
     } finally {
       setLoading(false);
     }
@@ -713,18 +714,18 @@ const StudentDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-gray-900">Student Dashboard</h2>
+      <h2 className="text-2xl font-bold text-gray-900">My Assignments</h2>
 
       <div className="bg-white rounded-lg shadow-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Available Assignments</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Assignments Assigned to Me</h3>
         </div>
         <div className="p-6">
-          {assignments.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No assignments available.</p>
+          {myAssignments.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No assignments assigned to you yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {assignments.map((assignment) => {
+              {myAssignments.map((assignment) => {
                 const isCompleted = completedAssignments.includes(assignment.id);
                 const isOverdue = new Date(assignment.deadline) < new Date();
                 
