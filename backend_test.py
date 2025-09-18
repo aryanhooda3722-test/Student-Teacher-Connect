@@ -12,6 +12,7 @@ import uuid
 # Configuration
 BASE_URL = "https://eduassign-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
+TIMEOUT = 30  # Increased timeout for external API calls
 
 class TestResults:
     def __init__(self):
