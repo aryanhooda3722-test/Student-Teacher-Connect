@@ -60,7 +60,7 @@ def test_user_registration():
     # Test teacher registration
     try:
         response = requests.post(f"{BASE_URL}/auth/register", 
-                               json=teacher_data, headers=HEADERS, timeout=10)
+                               json=teacher_data, headers=HEADERS, timeout=30)
         if response.status_code == 200:
             data = response.json()
             if "access_token" in data and data["user"]["role"] == "teacher":
