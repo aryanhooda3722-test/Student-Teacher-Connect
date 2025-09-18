@@ -679,44 +679,103 @@ const StudentDashboard = () => {
           {assignments.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No assignments available.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {assignments.map((assignment) => {
                 const isCompleted = completedAssignments.includes(assignment.id);
                 const isOverdue = new Date(assignment.deadline) < new Date();
                 
                 return (
-                  <div key={assignment.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="text-lg font-semibold text-gray-900">{assignment.title}</h4>
-                          {isCompleted && (
-                            <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                              Completed
-                            </span>
-                          )}
-                          {isOverdue && !isCompleted && (
-                            <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                              Overdue
-                            </span>
-                          )}
+                  <div 
+                    key={assignment.id} 
+                    className={`relative bg-gradient-to-br rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-200 border-2 ${
+                      isCompleted 
+                        ? 'from-green-50 to-green-100 border-green-200' 
+                        : isOverdue 
+                        ? 'from-red-50 to-red-100 border-red-200' 
+                        : 'from-white to-indigo-50 border-indigo-100'
+                    }`}
+                  >
+                    {/* Completion Checkbox */}
+                    <div className="absolute top-4 right-4">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isCompleted}
+                          onChange={() => !isCompleted && handleCompleteAssignment(assignment.id)}
+                          disabled={loading || isCompleted}
+                          className="h-5 w-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-50"
+                        />
+                        <span className="ml-2 text-sm font-medium text-gray-700">
+                          {isCompleted ? 'Complete' : 'Mark Done'}
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Status Badges */}
+                    <div className="mb-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                          assignment.subject === 'Mathematics' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+                          assignment.subject === 'Science' ? 'bg-green-100 text-green-800 border border-green-200' :
+                          assignment.subject === 'English' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                          assignment.subject === 'History' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                          assignment.subject === 'Art' ? 'bg-pink-100 text-pink-800 border border-pink-200' :
+                          'bg-gray-100 text-gray-800 border border-gray-200'
+                        }`}>
+                          {assignment.subject === 'Mathematics' && '🔢'} 
+                          {assignment.subject === 'Science' && '🔬'} 
+                          {assignment.subject === 'English' && '📖'} 
+                          {assignment.subject === 'History' && '🏛️'} 
+                          {assignment.subject === 'Art' && '🎨'} 
+                          {!['Mathematics', 'Science', 'English', 'History', 'Art'].includes(assignment.subject) && '📚'} 
+                          {assignment.subject}
+                        </span>
+                        {isCompleted && (
+                          <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full border border-green-200">
+                            ✅ Completed
+                          </span>
+                        )}
+                        {isOverdue && !isCompleted && (
+                          <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full border border-red-200">
+                            ⏰ Overdue
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Assignment Title */}
+                      <h4 className="text-xl font-bold text-gray-900 mb-3 leading-tight pr-20">{assignment.title}</h4>
+                      
+                      {/* Description */}
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">{assignment.description}</p>
+                    </div>
+
+                    {/* Footer Information */}
+                    <div className="border-t border-gray-200 pt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-700">Due Date:</span>
+                          <span className={`text-sm font-bold ${isOverdue && !isCompleted ? 'text-red-600' : 'text-indigo-600'}`}>
+                            {new Date(assignment.deadline).toLocaleDateString('en-US', { 
+                              weekday: 'short',
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })}
+                          </span>
                         </div>
-                        <p className="text-sm text-blue-600 mb-2">{assignment.subject}</p>
-                        <p className="text-gray-700 mb-3">{assignment.description}</p>
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p>Teacher: {assignment.teacher_name}</p>
-                          <p>Due: {new Date(assignment.deadline).toLocaleDateString()}</p>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-xs text-gray-500">👨‍🏫</span>
+                            <span className="text-xs text-gray-600 font-medium">{assignment.teacher_name}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="ml-4">
-                        {!isCompleted && (
-                          <button
-                            onClick={() => handleCompleteAssignment(assignment.id)}
-                            disabled={loading}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-                          >
-                            {loading ? 'Completing...' : 'Mark Complete'}
-                          </button>
+                      
+                      {/* Time Information */}
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Assigned: {new Date(assignment.created_at).toLocaleDateString()}</span>
+                        {isCompleted && (
+                          <span className="text-green-600 font-medium">✓ Task completed</span>
                         )}
                       </div>
                     </div>
